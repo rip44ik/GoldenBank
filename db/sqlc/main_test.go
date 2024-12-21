@@ -6,24 +6,26 @@ import (
 	"os"
 	"testing"
 
-    _"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 const (
-    dbDriver = "postgres"
-    dbSource = "postgresql://root:aswedD4321@localhost:5432/gold_bank?sslmode=disable"
+	dbDriver = "postgres"
+	dbSource = "postgresql://root:aswedD4321@localhost:5432/gold_bank?sslmode=disable"
 )
 
-
 var testQueries *Queries
+var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-    conn, err := sql.Open(dbDriver, dbSource)
-    if err != nil {
-        log.Fatal("cannot connect to db:", err)
-    }
+	var err error
 
-    testQueries = New(conn)
+	testDB, err = sql.Open(dbDriver, dbSource)
+	if err != nil {
+		log.Fatal("cannot connect to db", err)
+	}
 
-    os.Exit(m.Run())
+	testQueries = New(testDB)
+
+	os.Exit(m.Run())
 }
