@@ -7,12 +7,12 @@ import (
 
 // этот сервер будет обрабатывать все запросы банка
 type Server struct {
-	store  *db.Store
+	store  db.Store
 	router *gin.Engine
 }
 
 // New server creates and new HTTP server setup routing
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
