@@ -71,7 +71,7 @@ func TestCreateUserApi(t *testing.T) {
 					Email:    user.Email,
 				}
 				store.EXPECT().
-                CreateUser(gomock.Any(), eqCreateUserParams(arg, password)).
+					CreateUser(gomock.Any(), eqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user, nil)
 			},
@@ -179,7 +179,7 @@ func TestCreateUserApi(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			//Marshal body data to JSON
