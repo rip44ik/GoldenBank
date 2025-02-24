@@ -29,6 +29,6 @@ server:
 	go run main.go
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go gitlab.com/xfx1/goldbank/db/sqlc Store
+	mockgen -package mockdb -destination db/mock/store.go -imports "gomock=go.uber.org/mock/gomock" gitlab.com/xfx1/goldbank/db/sqlc Store
 
 .PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 sqlc test server mock
