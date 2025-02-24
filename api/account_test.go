@@ -49,6 +49,36 @@ func TestGetAccountAPI(t *testing.T) {
 			},
 		},
 		{
+			name:      "UnauthorizedUser",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, "unauthorized_user", time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:      "NoAuthorization",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
@@ -95,7 +125,6 @@ func TestGetAccountAPI(t *testing.T) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
-		//TODO: add more cases
 	}
 
 	for i := range testCases {
@@ -156,22 +185,6 @@ func TestCreateAccountAPI(t *testing.T) {
 				requireBodyMatchAccount(t, recorder.Body, account)
 			},
 		},
-		//	{
-		//		name: "NoAuthorization",
-		//		body: gin.H{
-		//			"currency": account.Currency,
-		//		},
-		//		setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		//		},
-		//		buildStubs: func(store *mockdb.MockStore) {
-		//			store.EXPECT().
-		//				CreateAccount(gomock.Any(), gomock.Any()).
-		//				Times(0)
-		//		},
-		//		checkResponse: func(recorder *httptest.ResponseRecorder) {
-		//			require.Equal(t, http.StatusUnauthorized, recorder.Code)
-		//		},
-		//	},
 		{
 			name: "InternalError",
 			body: gin.H{
@@ -193,6 +206,21 @@ func TestCreateAccountAPI(t *testing.T) {
 			body: gin.H{
 				"owner":    account.Owner,
 				"currency": "invalid",
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidOwner",
+			body: gin.H{
+				"owner":    "",
+				"currency": account.Currency,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
